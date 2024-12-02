@@ -72,11 +72,10 @@ def train_dagger(cfg: dict):
 	assert torch.cuda.is_available()
 	
 	set_seed(100)
+	cfg = parse_cfg(cfg)
 
 	agent = TDMPC2(cfg)
 	agent.load(cfg.base_model_path)
-
-	raise Exception("bruh")
 
 	# not sure if this actually works
 	trainer = DaggerTrainer(
@@ -86,6 +85,7 @@ def train_dagger(cfg: dict):
 		buffer=Buffer(cfg),
 		logger=Logger(cfg),
 	)
+	raise Exception("bruh")
 	trainer.train()
 
 	agent.save(cfg.end_model_path)
