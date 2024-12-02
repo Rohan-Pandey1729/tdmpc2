@@ -1,6 +1,8 @@
 import os
 os.environ['MUJOCO_GL'] = 'egl'
 os.environ['LAZY_LEGACY_OP'] = '0'
+os.environ['TORCHDYNAMO_INLINE_INBUILT_NN_MODULES'] = "1"
+os.environ['TORCH_LOGS'] = "+recompiles"
 import warnings
 warnings.filterwarnings('ignore')
 import torch
@@ -17,7 +19,11 @@ from trainer.offline_trainer import OfflineTrainer
 from trainer.online_trainer import OnlineTrainer
 from common.logger import Logger
 
+from utils import load_model
+from trainer.dagger_trainer import DaggerTrainer
+
 torch.backends.cudnn.benchmark = True
+torch.set_float32_matmul_precision('high')
 
 
 @hydra.main(config_name='config', config_path='.')
@@ -58,5 +64,34 @@ def train(cfg: dict):
 	print('\nTraining completed successfully')
 
 
+# cfg:
+#   - base_model_path: A path to the model we're starting from.
+#   - end_model_path: A path to the location we save our final model.
+@hydra.main(config_name='config', config_path='.')
+def train_dagger(cfg: dict):
+	assert torch.cuda.is_available()
+	
+	set_seed(100)
+
+	agent = TDMPC2(cfg)
+	agent.load(cfg.base_model_path)
+
+	raise Exception("bruh")
+
+	# not sure if this actually works
+	trainer = DaggerTrainer(
+		cfg=cfg,
+		env=make_env(cfg),
+		agent=agent,
+		buffer=Buffer(cfg),
+		logger=Logger(cfg),
+	)
+	trainer.train()
+
+	agent.save(cfg.end_model_path)
+
+	print('\nTraining completed successfully')
+
+
 if __name__ == '__main__':
-	train()
+	train_dagger()

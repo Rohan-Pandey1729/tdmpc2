@@ -1,36 +1,24 @@
-defaults:
-    - override hydra/launcher: submitit_local
-
-# environment
 task: cheetah-run
-# Either `state` or `rgb`, corresponding to an MLP or a CNN for the encoder.
 obs: state
-
-# evaluation
-# Only used in evaluate.py, the file path to the checkpoint that we will import our model from to evaluate.
 checkpoint: ???
 eval_episodes: 10
 eval_freq: 50000
-
-# training
-steps: 10_000_000
+steps: 10000000
 batch_size: 256
 reward_coef: 0.1
 value_coef: 0.1
 consistency_coef: 20
 rho: 0.5
-lr: 3e-4
+lr: 0.0003
 enc_lr_scale: 0.3
 grad_clip_norm: 20
 tau: 0.01
 discount_denom: 5
 discount_min: 0.95
 discount_max: 0.995
-buffer_size: 1_000_000
+buffer_size: 1000000
 exp_name: default
 data_dir: ???
-
-# planning
 mpc: true
 iterations: 6
 num_samples: 512
@@ -40,18 +28,12 @@ horizon: 3
 min_std: 0.05
 max_std: 2
 temperature: 0.5
-
-# actor
 log_std_min: -10
 log_std_max: 2
-entropy_coef: 1e-4
-
-# critic
+entropy_coef: 0.0001
 num_bins: 101
 vmin: -10
-vmax: +10
-
-# architecture
+vmax: 10
 model_size: ???
 num_enc_layers: 2
 enc_dim: 256
@@ -62,45 +44,28 @@ task_dim: 0
 num_q: 5
 dropout: 0.01
 simnorm_dim: 8
-
-# logging
 wandb_project: ???
 wandb_entity: ???
 wandb_silent: false
 disable_wandb: true
 save_csv: true
-
-# misc
 save_video: true
 save_agent: true
 seed: 1
-
-# convenience
 work_dir: ???
 task_title: ???
-# Mandatory, whether or not we're training on multiple tasks.
 multitask: false
 tasks: ???
-# Dictionary from `cfg.obs` to whatever. If `cfg.obs` is "state", then it's to an array of ints.
 obs_shape:
-    state: [17]
-# Mandatory if multitask=false.
+  state:
+  - 17
 action_dim: 6
-# Mandatory if multitask=false.
 episode_length: 1000
 obs_shapes: ???
 action_dims: ???
 episode_lengths: ???
 seed_steps: ???
 bin_size: ??
-
-# speedups
-compile: False
-
-
-# tdmpc2 with dagger
-
-# The file path of the world model that we start from.
+compile: false
 base_model_path: /mmfs1/gscratch/stf/qirico/All/tdmpc2/checkpoints/cheetah-run-1.pt.1
-# The file path of the policy network that we end on.
 end_model_path: /mmfs1/gscratch/stf/qirico/All/tdmpc2/checkpoints/cheetah-run-finished-1.pt.1
