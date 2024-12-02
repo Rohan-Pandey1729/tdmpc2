@@ -85,7 +85,6 @@ def train_dagger(cfg: dict):
 		buffer=Buffer(cfg),
 		logger=Logger(cfg),
 	)
-	raise Exception("bruh")
 	trainer.train()
 
 	agent.save(cfg.end_model_path)

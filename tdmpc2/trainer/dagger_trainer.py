@@ -16,7 +16,7 @@ from common.buffer import Buffer
 from torch import Tensor
 from typing import Union
 
-# cfg.eval_episodes: Number of episodes to plot for evaluation.
+# cfg.eval_episodes: Number of episodes to plot for evaluation, only used in evaluation.
 # cfg.save_video: Whether or not to save the videos of the evaluations.
 # cfg.dagger_epochs: How many times do we sample expert data + train model.
 # cfg.trajs_per_dagger_epoch: How many trajectories do we add per epoch.
