@@ -19,7 +19,7 @@ from trainer.offline_trainer import OfflineTrainer
 from trainer.online_trainer import OnlineTrainer
 from common.logger import Logger
 
-from utils import load_model
+from utils import prompt_if_file_exists
 from trainer.dagger_trainer import DaggerTrainer
 from copy import deepcopy
 
@@ -72,6 +72,10 @@ def train(cfg: dict):
 @hydra.main(config_name='config', config_path='.')
 def train_dagger(cfg: dict):
 	assert torch.cuda.is_available()
+	
+	if not prompt_if_file_exists(cfg.end_model_path):
+		print("Stopped.")
+		return
 	
 	set_seed(100)
 	cfg = parse_cfg(cfg)
