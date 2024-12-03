@@ -21,6 +21,7 @@ from common.logger import Logger
 
 from utils import load_model
 from trainer.dagger_trainer import DaggerTrainer
+from copy import deepcopy
 
 torch.backends.cudnn.benchmark = True
 torch.set_float32_matmul_precision('high')
@@ -67,6 +68,7 @@ def train(cfg: dict):
 # cfg:
 #   - base_model_path: A path to the model we're starting from.
 #   - end_model_path: A path to the location we save our final model.
+#   - student_base_model_path: Start with an existing student model.
 @hydra.main(config_name='config', config_path='.')
 def train_dagger(cfg: dict):
 	assert torch.cuda.is_available()
@@ -74,14 +76,22 @@ def train_dagger(cfg: dict):
 	set_seed(100)
 	cfg = parse_cfg(cfg)
 
-	agent = TDMPC2(cfg)
-	agent.load(cfg.base_model_path)
+	expert = TDMPC2(cfg)
+	expert.load(cfg.base_model_path)
+
+	agent_cfg = deepcopy(cfg)
+	agent_cfg.model_size = cfg.student_model_size
+	agent_cfg.mpc = False
+	agent = TDMPC2(agent_cfg)
+	if 'student_base_model_path' in agent_cfg:
+		agent.load(agent_cfg.student_base_model_path)
 
 	# not sure if this actually works
 	trainer = DaggerTrainer(
 		cfg=cfg,
 		env=make_env(cfg),
 		agent=agent,
+		expert=expert,
 		buffer=Buffer(cfg),
 		logger=Logger(cfg),
 	)

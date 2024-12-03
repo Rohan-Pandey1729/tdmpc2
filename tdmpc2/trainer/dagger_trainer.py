@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 from time import time
 
 import numpy as np
@@ -24,13 +22,10 @@ from typing import Union
 # cfg.train_epochs: How many times do we go through the buffer per dagger epoch.
 # cfg.student_model_size: Size specification according to common.MODEL_SIZE of the student. The student model may be larger than the expert.
 class DaggerTrainer(Trainer):
-  def __init__(self, cfg, env: Union[PixelWrapper, MultitaskWrapper, TensorWrapper], agent: TDMPC2, buffer: Buffer, logger):
+  def __init__(self, cfg, env: Union[PixelWrapper, MultitaskWrapper, TensorWrapper], agent: TDMPC2, expert: TDMPC2, buffer: Buffer, logger):
     super().__init__(cfg, env, agent, buffer, logger)
-    self.expert = agent
-    agent_cfg = deepcopy(cfg)
-    agent_cfg.model_size = cfg.student_model_size
-    agent_cfg.mpc = False
-    self.agent = TDMPC2(agent_cfg)
+    self.expert = expert
+    self.agent = agent
   
   def eval(self):
     """Evaluate a TD-MPC2 agent."""
@@ -102,8 +97,8 @@ class DaggerTrainer(Trainer):
         self.agent.optim.zero_grad()
         loss.backward()
         self.agent.optim.step()
-        if train_i % 2 == 1:
-          print(f"Trained #{train_i + 1} for {2} x {obs.shape}... {time() - t1}")
+        if train_i % 20 == 19:
+          print(f"Trained #{train_i + 1} for {20} x {obs.shape}... {time() - t1}")
           t1 = time()
     print(f"------ Finished training [{time() - t0}] ------")
   

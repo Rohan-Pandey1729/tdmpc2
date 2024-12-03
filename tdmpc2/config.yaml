@@ -102,6 +102,8 @@ compile: False
 
 # The file path of the world model that we start from.
 base_model_path: /mmfs1/gscratch/stf/qirico/All/tdmpc2/checkpoints/cheetah-run-1.pt.1
+# Optional. Start with an existing student policy.
+student_base_model_path: ???
 # The file path of the policy network that we end on.
 end_model_path: /mmfs1/gscratch/stf/qirico/All/tdmpc2/checkpoints/cheetah-run-finished-1.pt.1
 # cfg.eval_episodes: Number of episodes to plot for evaluation, only used in evaluation.
@@ -113,7 +115,7 @@ dagger_epochs: 10
 # cfg.trajs_per_dagger_epoch: How many trajectories do we add per epoch.
 trajs_per_dagger_epoch: 10
 # cfg.train_epochs: How many times do we go through the buffer per dagger epoch.
-train_epochs: 10
+train_epochs: 100
 # cfg.student_model_size: Size specification according to common.MODEL_SIZE of the student. The student model may be larger than the expert.
 student_model_size: 1
 # Evaluating the DAgger trained agent
