@@ -111,7 +111,7 @@ end_model_path: /mmfs1/gscratch/stf/qirico/All/tdmpc2/checkpoints/cheetah-run-fi
 # cfg.save_video: Whether or not to save the videos of the evaluations.
 # save_video: true
 # cfg.dagger_epochs: How many times do we sample expert data + train model.
-dagger_epochs: 10
+dagger_epochs: 0
 # cfg.trajs_per_dagger_epoch: How many trajectories do we add per epoch.
 trajs_per_dagger_epoch: 10
 # cfg.train_epochs: How many times do we go through the buffer per dagger epoch.
@@ -120,4 +120,5 @@ train_epochs: 100
 student_model_size: 1
 # Evaluating the DAgger trained agent
 dagger_evaluate: true  # Set to true when evaluating the DAgger-trained agent
-
+# cfg.results_csv: Path to save the results of the evaluation.
+results_csv: /mmfs1/gscratch/stf/qirico/All/tdmpc2/csvs/attempt-1.csv
