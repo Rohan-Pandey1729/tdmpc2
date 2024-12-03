@@ -116,3 +116,6 @@ trajs_per_dagger_epoch: 10
 train_epochs: 10
 # cfg.student_model_size: Size specification according to common.MODEL_SIZE of the student. The student model may be larger than the expert.
 student_model_size: 1
+# Evaluating the DAgger trained agent
+dagger_evaluate: true  # Set to true when evaluating the DAgger-trained agent
+

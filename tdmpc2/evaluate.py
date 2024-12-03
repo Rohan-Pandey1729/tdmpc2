@@ -16,7 +16,6 @@ from tdmpc2 import TDMPC2
 
 torch.backends.cudnn.benchmark = True
 
-
 @hydra.main(config_name='config', config_path='.')
 def evaluate(cfg: dict):
 	"""
@@ -42,6 +41,12 @@ def evaluate(cfg: dict):
 	assert torch.cuda.is_available()
 	assert cfg.eval_episodes > 0, 'Must evaluate at least 1 episode.'
 	cfg = parse_cfg(cfg)
+	set_seed(cfg.seed)
+	
+	if cfg.get('dagger_evaluate', False):
+		print(colored('Evaluating DAgger-trained model', 'blue', attrs=['bold']))
+		cfg.model_size = cfg.student_model_size
+		cfg.mpc = False
 	set_seed(cfg.seed)
 	print(colored(f'Task: {cfg.task}', 'blue', attrs=['bold']))
 	print(colored(f'Model size: {cfg.get("model_size", "default")}', 'blue', attrs=['bold']))
