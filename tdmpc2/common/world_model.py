@@ -153,8 +153,8 @@ class WorldModel(nn.Module):
 		# This code is without multitasking.
 		mu, log_std = self._pi(z).chunk(2, dim=-1)
 		log_std = math.log_std(log_std, self.log_std_min, self.log_std_dif)
-		if torch.any(pi >= 1 or pi <= -1):
-			raise ValueError("pi exceeds domain of atanh.")
+		epsilon = 1e-6
+		pi = torch.clamp(pi, -1 + epsilon, 1 - epsilon)
 		pi_beforetanh = torch.atanh(pi)
 		dist = torch.distributions.Normal(mu, torch.exp(log_std))
 

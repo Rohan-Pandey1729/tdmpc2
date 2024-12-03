@@ -16,19 +16,21 @@ from common.buffer import Buffer
 from torch import Tensor
 from typing import Union
 
+# cfg: Student config except for #architecture, where it's expert config.
 # cfg.eval_episodes: Number of episodes to plot for evaluation, only used in evaluation.
 # cfg.save_video: Whether or not to save the videos of the evaluations.
 # cfg.dagger_epochs: How many times do we sample expert data + train model.
 # cfg.trajs_per_dagger_epoch: How many trajectories do we add per epoch.
 # cfg.train_epochs: How many times do we go through the buffer per dagger epoch.
+# cfg.student_model_size: Size specification according to common.MODEL_SIZE of the student. The student model may be larger than the expert.
 class DaggerTrainer(Trainer):
   def __init__(self, cfg, env: Union[PixelWrapper, MultitaskWrapper, TensorWrapper], agent: TDMPC2, buffer: Buffer, logger):
     super().__init__(cfg, env, agent, buffer, logger)
-    # In order to train the agent policy, we should keep the expert planning consistent.
-    # This means we need to keep a constant expert model and policy by doing a deep copy.
-    self.expert = deepcopy(agent)
-    # Set student's mpc (planning) to false, because we don't want the student to plan.
-    self.agent.cfg.mpc = False
+    self.expert = agent
+    agent_cfg = deepcopy(cfg)
+    agent_cfg.model_size = cfg.student_model_size
+    agent_cfg.mpc = False
+    self.agent = TDMPC2(agent_cfg)
   
   def eval(self):
     """Evaluate a TD-MPC2 agent."""
@@ -60,18 +62,29 @@ class DaggerTrainer(Trainer):
 
   def train(self):
     """Train a TD-MPC2 agent."""
+    t0 = time()
+    t1 = time()
     # Assume there's already a well-trained world model loaded.
     for dagger_i in range(self.cfg.dagger_epochs):
       # Rollout student policy and label with expert action.
       # Assume there's no buffer at the beginning.
+      print()
+      print(f"------ DAgger iteration {dagger_i} [{time() - t0}] ------")
       for traj_i in range(self.cfg.trajs_per_dagger_epoch):
         obs, done, t = self.env.reset(), False, 0
+        tds = []
         while not done:
           student_action = self.agent.act(obs, t == 0, False)
           expert_action = self.expert.act(obs, t == 0, False) # Contrary to eval, here we keep eval_mode False.
           td = self.to_td(obs, expert_action, None) # We don't need reward in the buffer.
-          self.buffer.add(td)
+          tds.append(td)
           obs, reward, done, info = self.env.step(student_action)
+        td = self.to_td(obs)
+        tds.append(td)
+        self.buffer.add(torch.cat(tds, dim=0))
+        if traj_i % 10 == 9:
+          print(f"Collected trajectory #{traj_i + 1} ({10} x {len(tds) - 1})... {time() - t1}")
+          t1 = time()
     
       # Train student policy with expert action.
       for train_i in range(self.cfg.train_epochs):
@@ -82,6 +95,10 @@ class DaggerTrainer(Trainer):
         self.agent.optim.zero_grad()
         loss.backward()
         self.agent.optim.step()
+        if train_i % 2 == 1:
+          print(f"Trained #{train_i + 1} for {2} x {obs.shape}... {time() - t1}")
+          t1 = time()
+    print(f"------ Finished training [{time() - t0}] ------")
   
   
   # Copied from OnlineTrainer.
