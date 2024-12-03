@@ -150,17 +150,20 @@ class WorldModel(nn.Module):
 		return mu, pi, log_pi, log_std
 
 	def log_prob(self, z: Tensor, task: Union[int, None], pi: Tensor) -> Tensor:
+		# z: (N, Z)
+		# pi: (N, A)
 		# This code is without multitasking.
-		mu, log_std = self._pi(z).chunk(2, dim=-1)
-		log_std = math.log_std(log_std, self.log_std_min, self.log_std_dif)
+		mu, log_std = self._pi(z).chunk(2, dim=-1) # (N, A), (N, A)
+		log_std = math.log_std(log_std, self.log_std_min, self.log_std_dif) # (N, A)
 		epsilon = 1e-6
-		pi = torch.clamp(pi, -1 + epsilon, 1 - epsilon)
-		pi_beforetanh = torch.atanh(pi)
+		pi = torch.clamp(pi, -1 + epsilon, 1 - epsilon) # (N, A)
+		pi_beforetanh = torch.atanh(pi) # (N, A)
 		dist = torch.distributions.Normal(mu, torch.exp(log_std))
 
-		log_prob = dist.log_prob(pi_beforetanh)
-		log_prob -= math._squash(pi)
-		return log_prob
+		log_prob = dist.log_prob(pi_beforetanh) # (N, A)
+		log_prob -= math._squash(pi) # (N, A) negative
+		log_prob = torch.sum(log_prob, dim=1) # (N,)
+		return log_prob # (N,)
 
 	def Q(self, z, a, task, return_type='min', target=False):
 		"""

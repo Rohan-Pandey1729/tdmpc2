@@ -89,8 +89,15 @@ class DaggerTrainer(Trainer):
       # Train student policy with expert action.
       for train_i in range(self.cfg.train_epochs):
         obs, expert_action, reward, task = self.buffer.sample()
+        # obs: (Hp + 1, N, S), expert_action: (Hp, N, A), reward: (Hp, N, 1)
+        # Take the orignial state and action without planning.
+        obs = obs[0] # (N, S)
+        expert_action = expert_action[0] # (N, A)
+        reward = reward[0] # (N, 1)
         obs_z = self.agent.model.encode(obs, task) # I'm kind of perplexed in this respect. We're not adding task into buffer, so how is it getting task?
+        # obs_z: (N, Z)
         log_probs = self.agent.model.log_prob(obs_z, task, expert_action) # Custom-implemented function.
+        # log_probs: (N,)
         loss = -torch.mean(log_probs)
         self.agent.optim.zero_grad()
         loss.backward()
