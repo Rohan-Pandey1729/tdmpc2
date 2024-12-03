@@ -76,6 +76,9 @@ def train_dagger(cfg: dict):
 	if not prompt_if_file_exists(cfg.end_model_path):
 		print("Stopped.")
 		return
+	if not prompt_if_file_exists(cfg.results_csv):
+		print("Stopped.")
+		return
 	
 	set_seed(100)
 	cfg = parse_cfg(cfg)
