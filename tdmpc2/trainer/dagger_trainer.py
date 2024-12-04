@@ -97,8 +97,8 @@ class DaggerTrainer(Trainer):
 				td = self.to_td(obs)
 				tds.append(td)
 				self.buffer.add(torch.cat(tds, dim=0))
-				if traj_i % 10 == 9:
-					print(f"Collected trajectory #{traj_i + 1} ({10} x {len(tds) - 1})... {time() - t1}")
+				if traj_i % 5 == 4:
+					print(f"Collected trajectory #{traj_i + 1} ({5} x {len(tds) - 1})... {time() - t1}")
 					t1 = time()
 		
 				# Train student policy with expert action.
@@ -117,8 +117,8 @@ class DaggerTrainer(Trainer):
 				self.agent.optim.zero_grad()
 				loss.backward()
 				self.agent.optim.step()
-				if train_i % 20 == 19:
-					print(f"Trained #{train_i + 1} for {20} x {obs.shape}... {time() - t1}")
+				if train_i % 500 == 499:
+					print(f"Trained #{train_i + 1} with loss = {loss}... {time() - t1}")
 					t1 = time()
 			
 			eval_results = self.eval()
